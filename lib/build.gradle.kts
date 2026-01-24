@@ -23,16 +23,13 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation(libs.guava)
+    // Source: https://mvnrepository.com/artifact/org.springframework/spring-beans
+    implementation("org.springframework:spring-beans:7.0.3")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.12.1")
 }
 
-testing {
-    suites {
-        // Configure the built-in test suite
-        val test by getting(JvmTestSuite::class) {
-            // Use JUnit Jupiter test framework
-            useJUnitJupiter("5.12.1")
-        }
-    }
+tasks.test {
+    useJUnitPlatform()
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

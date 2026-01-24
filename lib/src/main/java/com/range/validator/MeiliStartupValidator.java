@@ -1,51 +1,103 @@
 package com.range.validator;
 
 import com.range.validator.exception.DatabaseUrlIsNullOREmptyException;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
+import java.io.IOException;
 
 /**
- * database validator for Meili
+ * Database validator for Meilisearch
  */
 public class MeiliStartupValidator {
+
     /*
-    the default timeout ( this is not chatgpt comment)
+     * default timeout in seconds
      */
     private static final int DEFAULT_TIMEOUT = 30;
+
     /*
-    the default interval
+     * default interval in seconds
      */
     private static final int DEFAULT_INTERVAL = 1;
 
-
     /*
-    the datasource URL of Meili
-         */
+     * Meili search base URL (example: http://localhost:7700)
+     */
     private String dataSourceURL;
-
 
     private int timeout = DEFAULT_TIMEOUT;
     private int interval = DEFAULT_INTERVAL;
 
+    private final OkHttpClient httpClient = new OkHttpClient();
+
     public void setInterval(int interval) {
-        this.interval = interval;
+        if (interval > 0) {
+            this.interval = interval;
+        }
     }
 
     public void setTimeout(int timeout) {
-        this.timeout = timeout;
+        if (timeout > 0) {
+            this.timeout = timeout;
+        }
     }
 
     public void setDataSourceURL(String dataSourceURL) {
+        if (dataSourceURL == null || dataSourceURL.isBlank()) {
+            throw new DatabaseUrlIsNullOREmptyException(
+                    "You can't validate Meili without URL. " +
+                            "Validating Meili without URL is like making coffee without coffee."
+            );
+        }
         this.dataSourceURL = dataSourceURL;
     }
 
+    /**
+     * Blocks application startup until Meili search is ready
+     */
     public void validateDatabase() {
-if (dataSourceURL == null || dataSourceURL.isBlank()){
-    throw new DatabaseUrlIsNullOREmptyException(
-            "You can't validate Meili without url" +
-            "validating some service without url like making cofee without coffee")
-}
+        if (dataSourceURL == null) {
+            throw new DatabaseUrlIsNullOREmptyException("Meili datasource URL is not set");
+        }
 
+        long deadline = System.currentTimeMillis() + timeout * 1000L;
 
+        while (System.currentTimeMillis() < deadline) {
+            if (isHealthy()) {
+                return;
+            }
+            sleep(interval * 1000L);
+        }
 
+        throw new IllegalStateException(
+                "Meili search is not ready after " + timeout + " seconds"
+        );
+    }
 
+    /**
+     * Calls /health endpoint
+     */
+    private boolean isHealthy() {
+        Request request = new Request.Builder()
+                .url(dataSourceURL + "/health")
+                .get()
+                .build();
+
+        try (Response response = httpClient.newCall(request).execute()) {
+            return response.isSuccessful();
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private void sleep(long millis) {
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        }
     }
 }
