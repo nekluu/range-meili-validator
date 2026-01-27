@@ -105,7 +105,8 @@ meili.datasource.url=http://localhost:7700
 Optional settings:
 
 ```properties
-meili.timeout=30
-meili.interval=1
+meili.startup.interval=    # default 1
+meili.startup.timeout=    # second format default is 30
+meili.startup.url=<Your-Meili-app-url> like(http://localhost:7070)
 ```
 
