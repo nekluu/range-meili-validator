@@ -1,3 +1,4 @@
+package com.range.meili.enums;
 public enum MeiliTaskStatus {
 
     ENQUEUED,
