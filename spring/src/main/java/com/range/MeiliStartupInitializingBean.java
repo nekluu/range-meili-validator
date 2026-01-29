@@ -2,8 +2,10 @@ package com.range;
 
 import com.range.meili.validator.MeiliStartupValidator;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 
-public class MeiliStartupInitializingBean implements InitializingBean {
+public class MeiliStartupInitializingBean implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     private final MeiliStartupValidator validator;
 
@@ -11,8 +13,9 @@ public class MeiliStartupInitializingBean implements InitializingBean {
         this.validator = validator;
     }
 
+
     @Override
-    public void afterPropertiesSet() {
+    public void initialize(ConfigurableApplicationContext applicationContext) {
         validator.validate();
     }
 }
