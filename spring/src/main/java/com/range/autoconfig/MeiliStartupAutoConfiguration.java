@@ -1,6 +1,6 @@
 package com.range.autoconfig;
 
-import com.range.MeiliStartupRunner;
+import com.range.MeiliStartupLifecycle;
 import com.range.meili.http.MeiliHttpClient;
 import com.range.meili.validator.MeiliHealthChecker;
 import com.range.meili.validator.MeiliIndexChecker;
@@ -48,9 +48,9 @@ public class MeiliStartupAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public MeiliStartupRunner meiliStartupRunner(
+    public MeiliStartupLifecycle meiliStartupRunner(
             MeiliStartupValidator validator
     ) {
-        return new MeiliStartupRunner(validator);
+        return new MeiliStartupLifecycle(validator);
     }
 }
