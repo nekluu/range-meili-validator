@@ -18,19 +18,22 @@ public class MeiliStartupValidator {
 
     private final int timeoutSeconds;
     private final int intervalSeconds;
+    private final boolean loggingEnabled;
 
     public MeiliStartupValidator(
             MeiliHealthChecker healthChecker,
             MeiliTaskChecker taskChecker,
             MeiliIndexChecker indexChecker,
             int timeoutSeconds,
-            int intervalSeconds
+            int intervalSeconds,
+            boolean loggingEnabled
     ) {
         this.healthChecker = healthChecker;
         this.taskChecker = taskChecker;
         this.indexChecker = indexChecker;
         this.timeoutSeconds = timeoutSeconds;
         this.intervalSeconds = intervalSeconds;
+        this.loggingEnabled =loggingEnabled;
     }
 
     public void validate(boolean loggingEnabled) {
