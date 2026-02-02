@@ -105,14 +105,33 @@ meili.startup.url=<Your-Meili-app-url> like(http://localhost:7070)(default url i
 Optional settings:
 
 ```properties
-meili.startup.interval=    # default 1
-meili.startup.timeout=    # second format default is 30
+# How often (in seconds) the system checks whether Meilisearch is ready.
+# Default: 1
+# Increasing this value is recommended when log-mode is enabled,
+# because very small intervals may cause excessive log output.
+meili.startup.interval=
 
-# API key is optional: only fill if your Meili instance was started with a key
+# Maximum time (in seconds) to wait for Meili search to become ready.
+# Default: 30
+meili.startup.timeout=
+
+# Optional API key.
+# Only set this if your Meilisearch instance was started with an API key.
 meili.startup.api-key=YOUR_MEILI_API_KEY
+
+# Enables or disables startup logging.
+# Default: true
+# When enabled, detailed messages are logged explaining why Meilisearch
+# is not ready yet (e.g. "Health check failed").
+meili.startup.log-mode=
+
+
+
 ```
 
 # what is interval ?
 interval is the frequency at which requests are sent during the timeout period.
 In other words, it defines how often the system should check Meili until the timeout is reached.
+
+
 
