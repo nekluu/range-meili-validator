@@ -119,7 +119,7 @@ meili.startup.timeout=
 # Only set this if your Meilisearch instance was started with an API key.
 meili.startup.api-key=YOUR_MEILI_API_KEY
 
-
+# default log mode is "info"
 meili.startup.log-mode=
 
 

@@ -58,6 +58,7 @@ public class MeiliStartupValidator {
             sleep();
         }
 
+        log(LogMode.ERROR, "Startup timeout reached");
         throw new MeiliNotStartedException(
                 "MeiliSearch is not ready after " + timeoutSeconds + " seconds"
         );
