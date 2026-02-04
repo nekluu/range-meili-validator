@@ -1,5 +1,6 @@
 package com.range.meili.http;
 
+import com.range.meili.exception.InvalidMaterKeyException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -31,6 +32,7 @@ private final static Logger log =LoggerFactory.getLogger(MeiliHttpClient.class);
             if (!response.isSuccessful()) {
                 if (response.code() == 401 ||response.code() == 403) {
                     log.error("Authentication failed! Status: {}. Response: {}",response.code(), response.body());
+                    throw new InvalidMaterKeyException("Master key is invalid. Status: " + response.code());
                 }
                 throw new IOException("HTTP request failed: " + response.code());
             }
