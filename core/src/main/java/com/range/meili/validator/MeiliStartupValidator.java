@@ -1,8 +1,11 @@
 package com.range.meili.validator;
 
+import com.range.meili.enums.LogMode;
 import com.range.meili.exception.MeiliNotStartedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Instant;
 
 
 /**
@@ -18,7 +21,7 @@ public class MeiliStartupValidator {
 
     private final int timeoutSeconds;
     private final int intervalSeconds;
-    private final boolean loggingEnabled;
+    private final LogMode logMode;
 
     public MeiliStartupValidator(
             MeiliHealthChecker healthChecker,
@@ -26,42 +29,36 @@ public class MeiliStartupValidator {
             MeiliIndexChecker indexChecker,
             int timeoutSeconds,
             int intervalSeconds,
-            boolean loggingEnabled
+            LogMode logMode
     ) {
         this.healthChecker = healthChecker;
         this.taskChecker = taskChecker;
         this.indexChecker = indexChecker;
         this.timeoutSeconds = timeoutSeconds;
         this.intervalSeconds = intervalSeconds;
-        this.loggingEnabled =loggingEnabled;
+        this.logMode = logMode;
     }
 
     public void validate() {
-        long deadline = System.currentTimeMillis() + timeoutSeconds * 1000L;
+        Instant deadline = Instant.now().plusSeconds(timeoutSeconds);
 
-        while (System.currentTimeMillis() < deadline) {
+        while (Instant.now().isBefore(deadline)) {
 
             if (!healthChecker.isHealthy()) {
-                logIfEnabled(loggingEnabled, "Health check failed");
-                sleep();
-                continue;
+                log(LogMode.INFO, "Health check failed");
+            } else if (!taskChecker.isSnapshotFinished()) {
+            log(LogMode.WARN, "Snapshot import still running");
+            } else if (!indexChecker.isQueryable()) {
+                log(LogMode.INFO, "Indexes are not queryable yet");
+            } else {
+                log(LogMode.INFO, "MeiliSearch is fully ready");
+                return;
             }
 
-            if (!taskChecker.isSnapshotFinished()) {
-                logIfEnabled(loggingEnabled, "Snapshot import still running");
-                sleep();
-                continue;
-            }
-
-            if (!indexChecker.isQueryable()) {
-                logIfEnabled(loggingEnabled, "Indexes are not queryable yet");
-                sleep();
-                continue;
-            }
-
-            return;
+            sleep();
         }
 
+        log(LogMode.ERROR, "Startup timeout reached");
         throw new MeiliNotStartedException(
                 "MeiliSearch is not ready after " + timeoutSeconds + " seconds"
         );
@@ -77,9 +74,30 @@ public class MeiliStartupValidator {
             throw new RuntimeException(e);
         }
     }
-    private void logIfEnabled(boolean enabled, String message) {
-        if (enabled) {
-            log.error("Meili startup failed: {}", message);
+    private void log(LogMode level, String message) {
+        if (logMode == null || logMode == LogMode.NONE) return;
+
+        switch (logMode) {
+            case DEBUG -> {
+                log.debug(message);
+                log.info(message);
+                log.warn(message);
+                log.error(message);
+            }
+            case INFO -> {
+                if (level == LogMode.INFO) log.info(message);
+                if (level == LogMode.WARN) log.warn(message);
+                if (level == LogMode.ERROR) log.error(message);
+            }
+            case WARN -> {
+                if (level == LogMode.WARN) log.warn(message);
+                if (level == LogMode.ERROR) log.error(message);
+            }
+            case ERROR -> {
+                if (level == LogMode.ERROR) log.error(message);
+            }
         }
     }
+
+
 }
