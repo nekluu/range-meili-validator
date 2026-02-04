@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 
 public class MeiliHttpClient {
-private final static Logger log =LoggerFactory.getLogger(MeiliHttpClient.class);
+    private final static Logger log = LoggerFactory.getLogger(MeiliHttpClient.class);
     private final OkHttpClient client = new OkHttpClient();
     private final String apiKey;
 
@@ -19,7 +19,7 @@ private final static Logger log =LoggerFactory.getLogger(MeiliHttpClient.class);
     }
 
     public String get(String url) throws IOException {
-                Request.Builder builder = new Request.Builder().url(url).get();
+        Request.Builder builder = new Request.Builder().url(url).get();
 
 
         if (apiKey != null && !apiKey.isBlank()) {
@@ -30,8 +30,8 @@ private final static Logger log =LoggerFactory.getLogger(MeiliHttpClient.class);
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                if (response.code() == 401 ||response.code() == 403) {
-                    log.error("Authentication failed! Status: {}. Response: {}",response.code(), response.body());
+                if (response.code() == 401 || response.code() == 403) {
+                    log.error("Authentication failed! Status: {}. Response: {}", response.code(), response.body());
                     throw new InvalidMaterKeyException("Master key is invalid. Status: " + response.code());
                 }
                 throw new IOException("HTTP request failed: " + response.code());
@@ -44,8 +44,12 @@ private final static Logger log =LoggerFactory.getLogger(MeiliHttpClient.class);
         try {
             get(url);
             return true;
+        } catch (InvalidMaterKeyException e) {
+            throw e;
         } catch (IOException e) {
+            log.warn("Meilisearch not reachable for URL: {}. {}", url, e.getMessage());
             return false;
         }
     }
+
 }
